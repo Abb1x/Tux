@@ -104,6 +104,7 @@ async def help(ctx):
     embed.add_field(name='echo', value='copy your message', inline=False)
     embed.add_field(name='addrole <number> ', value='Gives you a role !', inline=False)
     embed.add_field(name='sudorm-rf/*', value='Deletes 100 messages', inline=False)
+    embed.add_field(name='Ping', value='Return pong!', inline=False)
     await ctx.send(embed=embed)
 
 client.run(TOKEN)
