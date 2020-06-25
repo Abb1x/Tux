@@ -79,4 +79,4 @@ async def help(ctx):
     embed.add_field(name='addrole', value='Give you a role !', inline=False)
     await ctx.send(embed=embed)
 
-client.run('NzEyMzg0ODY3MTMxNzE5Nzg2.XsQySg.T2AIIKq6sx3PUb0UYSsa39czYjM')
+client.run('Token')
