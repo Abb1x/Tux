@@ -5,7 +5,7 @@ players = 0
 created = False
 client = commands.Bot(command_prefix = '>')
 client.remove_command('help')
-#------------------------Début du programme-------------------------------------
+#------------------------Start-------------------------------------
 @client.event
 async def on_ready():
     await client.change_presence(status=discord.Status.online, activity=discord.Game(">help"))
