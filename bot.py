@@ -3,12 +3,12 @@ import os
 from discord.ext import commands
 players = 0
 created = False
-client = commands.Bot(command_prefix = 'u!')
+client = commands.Bot(command_prefix = '>')
 client.remove_command('help')
 #------------------------Début du programme-------------------------------------
 @client.event
 async def on_ready():
-    await client.change_presence(status=discord.Status.online, activity=discord.Game("u! help"))
+    await client.change_presence(status=discord.Status.online, activity=discord.Game(">help"))
     print('Bot online')
 #-------------------------Moderation--------------------------------------------
 @client.command()
@@ -70,7 +70,7 @@ async def help(ctx):
     embed = discord.Embed(
     colour = discord.Colour.purple()
     )
-    embed.set_author(name='Commands'')
+    embed.set_author(name='Commands')
     embed.add_field(name='ban', value='Ban a member', inline=False)
     embed.add_field(name='unban', value='Unban a member', inline=False)
     embed.add_field(name='kick', value='Kick a member', inline=False)
@@ -79,4 +79,4 @@ async def help(ctx):
     embed.add_field(name='addrole', value='Give you a role !', inline=False)
     await ctx.send(embed=embed)
 
-client.run('NzEyMzg0ODY3MTMxNzE5Nzg2.XsQySg.T2AIIKq6sx3PUb0UYSsa39czYjM')
+client.run('Token')
