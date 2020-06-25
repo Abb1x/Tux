@@ -1,1 +1,1 @@
-Open-source discord bot for the ubunut server(there is no typo) link: https://discord.gg/p6fh8NG
+Open-source discord bot for the Ubunut discord server!(there is no typo) link: https://discord.gg/p6fh8NG
