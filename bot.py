@@ -1,11 +1,13 @@
 import discord
 import os
+import dotenv
 from discord.ext import commands
-players = 0
-created = False
+from time import sleep
+dotenv.load_dotenv()
+TOKEN = os.getenv('TOKEN')
 client = commands.Bot(command_prefix = '>')
 client.remove_command('help')
-#------------------------Début du programme-------------------------------------
+#------------------------Start-------------------------------------
 @client.event
 async def on_ready():
     await client.change_presence(status=discord.Status.online, activity=discord.Game(">help"))
@@ -16,6 +18,7 @@ async def on_ready():
 async def clear(ctx, amount : int):
     await ctx.channel.purge(limit=amount)
     sent = await ctx.send(F"I deleted `{amount}` messages")
+    sleep(1)
     await sent.delete()
 
 
@@ -52,8 +55,9 @@ async def say(ctx, *, arg):
     await ctx.send(arg)
 @client.event
 async def on_message(message):
-    if(message.channel.id == "711646270279909386"):
-        await client.add_reaction(message, "❤️")
+    if(message.channel.id == '711646270279909386'):
+        await client.add_reaction(message, "👍")
+    await client.process_commands(message)
 #---------------------Errors---------------------------------------------------
 @client.event
 async def on_command_error(ctx, error):
@@ -74,9 +78,9 @@ async def help(ctx):
     embed.add_field(name='ban', value='Ban a member', inline=False)
     embed.add_field(name='unban', value='Unban a member', inline=False)
     embed.add_field(name='kick', value='Kick a member', inline=False)
-    embed.add_field(name='clear <montant>', value='purge a number of messages', inline=False)
+    embed.add_field(name='clear <amount>', value='purge a number of messages', inline=False)
     embed.add_field(name='say', value='say a message', inline=False)
-    embed.add_field(name='addrole', value='Give you a role !', inline=False)
+    embed.add_field(name='addrole', value='Gives you a role !', inline=False)
     await ctx.send(embed=embed)
 
-client.run('Token')
+client.run(TOKEN)
