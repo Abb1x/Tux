@@ -183,4 +183,4 @@ async def help(ctx):
     embed.add_field(name='timer', value='set a timer for bumping the server', inline=False)
     await ctx.send(embed=embed)
 
-client.run("NzI1NzM0NzcyNDc5MDk4ODgw.XvTMRg.Jhq3c4o3gubKK6NFMDFZaU3cNb4")
+client.run("Token")
