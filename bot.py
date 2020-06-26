@@ -180,7 +180,7 @@ async def help(ctx):
     embed.add_field(name='compgen -c', value='Gives you a list of linux commands', inline=False)
     embed.add_field(name='docs <distro>', value='Send you a link of officials docs of chosen distro (no value = list of distros)', inline=False)
     embed.add_field(name='request <idea>', value='request an idea for the server', inline=False)
-    embed.add_field(name='timer', value='set a timer for bumping the server', inline=False)
+    embed.add_field(name='bump', value='Bump the server', inline=False)
     await ctx.send(embed=embed)
 
 client.run(os.environ['TOKEN'])
