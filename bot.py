@@ -67,7 +67,7 @@ async def timer(ctx):
     await ctx.send(":white_check_mark: I'll set a reminder for bumping in 2 hours")
     while True:
         sleep(7200)
-        await ctx.send("<@&725868576027967488> it's time to bump!")
+        await ctx.send("!d bump")
 @client.command()
 async def docs(ctx,*,arg):
     if arg == "ubuntu":
@@ -179,6 +179,7 @@ async def help(ctx):
     embed.add_field(name='compgen -c', value='Gives you a list of linux commands', inline=False)
     embed.add_field(name='docs <distro>', value='Send you a link of officials docs of chosen distro (no value = list of distros)', inline=False)
     embed.add_field(name='request <idea>', value='request an idea for the server', inline=False)
+    embed.add_field(name='timer', value='set a timer for bumping the server', inline=False)
     await ctx.send(embed=embed)
 
 client.run("NzI1NzM0NzcyNDc5MDk4ODgw.XvTMRg.Jhq3c4o3gubKK6NFMDFZaU3cNb4")
