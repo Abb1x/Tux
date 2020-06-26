@@ -1,10 +1,7 @@
 import discord
 import os
-import dotenv
 from discord.ext import commands
 from time import sleep
-dotenv.load_dotenv()
-TOKEN = os.getenv('TOKEN')
 client = commands.Bot(command_prefix = '>')
 client.remove_command('help')
 #------------------------Start-------------------------------------
@@ -184,4 +181,4 @@ async def help(ctx):
     embed.add_field(name='request <idea>', value='request an idea for the server', inline=False)
     await ctx.send(embed=embed)
 
-client.run(TOKEN)
+client.run("NzI1NzM0NzcyNDc5MDk4ODgw.XvTMRg.Jhq3c4o3gubKK6NFMDFZaU3cNb4")
