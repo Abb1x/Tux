@@ -61,10 +61,16 @@ async def request(ctx,*,arg):
     channel = client.get_channel(725855420454928394)
     msg = arg
     await channel.send(f"Request from {ctx.author.mention} : {arg}")
-    await ctx.send("Idea sent to the staff!")
+    await ctx.send(":white_check_mark: Idea request sent to the staff!")
 @client.command()
 async def echo(ctx, *, arg):
     await ctx.send(arg)
+@client.command()
+async def timer(ctx):
+    await ctx.send(":white_check_mark: I'll set a reminder for bumping in 2 hours")
+    while True:
+        sleep(7200)
+        await ctx.send("<@&725868576027967488> it's time to bump!")
 @client.command()
 async def docs(ctx,*,arg):
     if arg == "ubuntu":
