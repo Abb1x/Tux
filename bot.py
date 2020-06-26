@@ -64,7 +64,7 @@ async def echo(ctx, *, arg):
     await ctx.send(arg)
 @client.command()
 async def timer(ctx):
-    await ctx.send(":white_check_mark: I'll set a reminder for bumping in 2 hours")
+    await ctx.send(":white_check_mark: I'll bump in 2 hours")
     channel = client.get_channel(711706908544860231)
     while True:
         sleep(7200)
