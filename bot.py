@@ -1,9 +1,16 @@
 import discord
 import os
+import praw
+import random
 from discord.ext import commands
 from time import sleep
 client = commands.Bot(command_prefix = '>')
 client.remove_command('help')
+upvote = "<:upvote:726140828090761217>"
+downvote = '<:downvote:726140881060757505>'
+reddit = praw.Reddit(client_id='ID',
+                     client_secret='SECRET',
+                     user_agent='Ububot')
 #------------------------Start-------------------------------------
 @client.event
 async def on_ready():
@@ -11,9 +18,20 @@ async def on_ready():
     print('Bot online')
 #-------------------------Moderation--------------------------------------------
 @client.command()
+async def meme(ctx):
+    channel = client.get_channel(711647460937826327)
+    memes_submissions = reddit.subreddit('linuxmemes').top()
+    post_to_pick = random.randint(1, 200)
+    for i in range(0, post_to_pick):
+        submission = next(x for x in memes_submissions if not x.stickied)
+    await ctx.send("<#711647460937826327>")
+    message = await channel.send(submission.url)
+    await message.add_reaction(upvote)
+    await message.add_reaction(downvote)
+@client.command()
 @commands.has_role(725739488592265227)
-async def clear(ctx, amount : int):
-    await ctx.channel.purge(limit=amount)
+async def rm(ctx, amount : int):
+    await ctx.channel.purge(limit=amount+1)
     sent = await ctx.send(F"I deleted `{amount}` messages")
     sleep(1)
     await sent.delete()
@@ -54,21 +72,14 @@ async def unban(ctx, *, member):
 async def ping(ctx):
     await ctx.send(f':ping_pong: Pong **{round(client.latency * 1000)}ms**')
 @client.command()
-async def request(ctx,*,arg):
+async def report(ctx,*,arg):
     channel = client.get_channel(725855420454928394)
     msg = arg
-    await channel.send(f"Request from {ctx.author.mention} : {arg}")
-    await ctx.send(":white_check_mark: Idea request sent to the staff!")
+    await channel.send(f"Report from {ctx.author.mention} : {arg}")
+    await ctx.send(":white_check_mark: Report sent to the staff!")
 @client.command()
 async def echo(ctx, *, arg):
     await ctx.send(arg)
-@client.command()
-async def timer(ctx):
-    await ctx.send(":white_check_mark: I'll bump in 2 hours")
-    channel = client.get_channel(711706908544860231)
-    while True:
-        sleep(7200)
-        await channel.send("!d bump")
 @client.command()
 async def docs(ctx,*,arg):
     if arg == "ubuntu":
@@ -88,7 +99,8 @@ async def docs(ctx,*,arg):
 @client.event
 async def on_message(message):
     if message.channel.id == 711646270279909386:
-        await message.add_reaction("♥")
+        await message.add_reaction(upvote)
+        await message.add_reaction(downvote)
     await client.process_commands(message)
 @client.command()
 async def addrole(ctx,*,arg):
@@ -132,15 +144,30 @@ async def addrole(ctx,*,arg):
 async def compgen(ctx,*,arg):
     if arg == "-c":
         await ctx.send("https://fossbytes.com/a-z-list-linux-command-line-reference/")
+@client.command()
+async def github(ctx):
+    await ctx.send("https://github.com/Abb1x/Ububot")
+
 #---------------------Errors---------------------------------------------------
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
-         await ctx.send(":x: This command does not exist. ")
-@clear.error
-async def clear_error(ctx, error) :
+         await ctx.send(":x: This command does not exist.")
+@rm.error
+async def rm_error(ctx, error) :
     if isinstance(error, commands.MissingRequiredArgument):
         await ctx.send(":x: Please specify a number of messages to clear")
+    if isinstance(error, commands.MissingRole):
+        await ctx.send(":x: Please run this command as root")
+@ban.error
+async def ban_error(ctx,error):
+    if isinstance(error, commands.MissingRole):
+        await ctx.send(":x: Please run this command as root")
+@kick.error
+async def kick_error(ctx,error):
+    if isinstance(error, commands.MissingRole):
+        await ctx.send(":x: Please run this command as root")
+
 @sudo.error
 async def sudo_error(ctx, error) :
         if isinstance(error, commands.MissingRole):
@@ -172,15 +199,16 @@ async def help(ctx):
     embed.add_field(name='ban', value='Ban a member', inline=False)
     embed.add_field(name='unban', value='Unban a member', inline=False)
     embed.add_field(name='kick', value='Kick a member', inline=False)
-    embed.add_field(name='clear <amount>', value='purge a number of messages', inline=False)
-    embed.add_field(name='echo', value='copy your message', inline=False)
+    embed.add_field(name='rm <amount>', value='purge a number of messages', inline=False)
+    embed.add_field(name='echo', value='Copy your message', inline=False)
     embed.add_field(name='addrole <number> ', value="Gives you a role ! ('addrole list' for the list of roles)", inline=False)
     embed.add_field(name='sudo rm -rf /*', value='Deletes 100 messages', inline=False)
     embed.add_field(name='ping', value='Returns pong!', inline=False)
     embed.add_field(name='compgen -c', value='Gives you a list of linux commands', inline=False)
     embed.add_field(name='docs <distro>', value='Send you a link of officials docs of chosen distro (no value = list of distros)', inline=False)
-    embed.add_field(name='request <idea>', value='request an idea for the server', inline=False)
-    embed.add_field(name='bump', value='Bump the server', inline=False)
+    embed.add_field(name='report <user>', value='report a user', inline=False)
+    embed.add_field(name='meme', value='gives you a random linux meme', inline=False)
+    embed.add_field(name='github', value='Gives you the source code of the bot', inline=False)
     await ctx.send(embed=embed)
 
-client.run(os.environ['TOKEN'])
+client.run(TOKEN)
