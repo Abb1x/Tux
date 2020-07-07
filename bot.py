@@ -136,7 +136,7 @@ async def compgen(ctx,*,arg):
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
-         await ctx.send(":x: This command does not exists")
+         await ctx.send(":x: This command does not exist. ")
 @clear.error
 async def clear_error(ctx, error) :
     if isinstance(error, commands.MissingRequiredArgument):
