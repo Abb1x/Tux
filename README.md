@@ -1,5 +1,5 @@
 
-<center><img src="https://cdn.discordapp.com/attachments/724424681762979922/738152641346928690/tux.png"></img></center>
+<center><img src="https://cdn.discordapp.com/attachments/724424681762979922/738152809626730556/tux2.png"></img></center>
 
 
 ### Open-source discord bot for the Ubunut Discord Server! (no, its not a typo) 
