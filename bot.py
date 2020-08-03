@@ -11,8 +11,8 @@ client.remove_command('help')
 upvote = "<:upvote:726140828090761217>"
 downvote = '<:downvote:726140881060757505>'
 showcase_channel = 1
-reddit = praw.Reddit(client_id='c2EFf196cE7pXQ',
-                     client_secret='EtNT1iTIuyokweq7Qsgss6xEFwE',
+reddit = praw.Reddit(client_id='ID',
+                     client_secret='SECRET',
                      user_agent='Ububot')
 #------------------------Start-------------------------------------
 @client.event
