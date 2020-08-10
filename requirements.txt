@@ -1,0 +1,3 @@
+discord.py==1.3.4
+praw==7.1.0
+wikipedia
