@@ -1,3 +1,8 @@
+<<<<<<< HEAD
 discord.py==1.3.4
 praw==7.1.0
 wikipedia
+=======
+discord.py==1.3.3
+python-dotenv==0.13.0
+>>>>>>> a8ee33d1188cfe1150aba2e9aa185c90fc891826
