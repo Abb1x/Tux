@@ -9,7 +9,11 @@ import json
 import psycopg2
 import os
 from decouple import config
+<<<<<<< HEAD
 #api key for weather api
+=======
+#api key for weather
+>>>>>>> 0ca7ef6abe6a190c30a6d6ed00f2a7440978b08d
 api_key = config("WEATHER_KEY")
 base_url = "http://api.openweathermap.org/data/2.5/weather?"
 #Cog for misc commands
