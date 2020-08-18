@@ -21,5 +21,7 @@ class ErrorCog(commands.Cog):
             if isinstance(error, commands.MissingRequiredArgument):
                 embed = discord.Embed(description=f":x: │ **Missing required arguments**",colour=discord.Colour.red())
                 return await ctx.send(embed=embed)
+        if isinstance(error,commands.CommandOnCooldown):
+            await ctx.send("Please wait before running this command again!")
 def setup(client):
     client.add_cog(ErrorCog(client))

@@ -1,3 +1,5 @@
+import os
+import pathlib
 import discord
 from discord.ext import commands
 import random
@@ -5,17 +7,21 @@ from googletrans import Translator
 import wikipedia
 import urbandictionary as ud
 import requests #used to send get request
-import json
 import psycopg2
-import os
+import praw
 from decouple import config
-<<<<<<< HEAD
 #api key for weather api
-=======
 #api key for weather
->>>>>>> 0ca7ef6abe6a190c30a6d6ed00f2a7440978b08d
+reddit_secret = config("REDDIT_SECRET")
+reddit = praw.Reddit(client_id="c2EFf196cE7pXQ",
+                     client_secret=reddit_secret,
+                     user_agent='Ububot')
 api_key = config("WEATHER_KEY")
 base_url = "http://api.openweathermap.org/data/2.5/weather?"
+upvote = "<:upvote:726140828090761217>"
+downvote = '<:downvote:726140881060757505>'
+remove_bg_api_key=config("REMOVEBG_KEY")
+
 #Cog for misc commands
 class MiscCog(commands.Cog):
     def __init__(self, client):
@@ -87,7 +93,6 @@ class MiscCog(commands.Cog):
         embed=discord.Embed(title=f"{member.name}'s avatar")
         embed.set_image(url=f"{member.avatar_url}")
         await ctx.send(embed=embed)
-
     @commands.command()
     async def trans(self,ctx,arg,arg2):
         translator = Translator()
@@ -176,6 +181,22 @@ class MiscCog(commands.Cog):
         embed.add_field(name=f"Category: {str['type']}", value="\u200b", inline=False)
         embed.add_field(name=f"Joke: {str['setup']}", value=f"{str['punchline']}", inline=True)
         await ctx.send(embed=embed)
+    @commands.command(aliases=['dmeme','memes'])
+    async def dankmeme(self,ctx):
+        try:
+            async with ctx.typing():
+                memes_submissions = reddit.subreddit('memes').hot()
+                post_to_pick = random.randint(1,100)
+                for i in range(0, post_to_pick):
+                    submission = next(x for x in memes_submissions if not x.stickied)
+                    embed=discord.Embed(title=f"{submission.title}",url=f"{submission.url}",color=random.randint(0, 0xffffff))
+                    embed.set_author(name="r/memes")
+                    embed.set_image(url=f"{submission.url}")
+            message = await ctx.send(embed=embed)
+            await message.add_reaction(upvote)
+            await message.add_reaction(downvote)
+        except:
+            await ctx.send("Sorry, an error occurred please retry")
     @commands.command()
     async def choose(self,ctx,*,choices):
         choices = choices.split(" ")
@@ -210,24 +231,32 @@ class MiscCog(commands.Cog):
         embed.add_field(name=f"Created by: <:abbix:738920766451482714> Abbix#4319", value="\u200b", inline=False)
         await ctx.send(embed=embed)
     @commands.command()
-    async def testdb(self,ctx):
-            conn = psycopg2.connect("postgres://lfhtzuomwrfrlb:c8a897770748d7802579b93b44004582399992cee9684793f84bab71676c9fba@ec2-35-173-94-156.compute-1.amazonaws.com:5432/d3232lt1k8u332")
-            cur = conn.cursor()
-            cur.execute("""CREATE TABLE  "AGENTS"
-                (
-            "AGENT_CODE" CHAR(6) NOT NULL PRIMARY KEY,
-        	"AGENT_NAME" CHAR(40),
-        	"WORKING_AREA" CHAR(35),
-        	"COMMISSION" INT(10,2),
-        	"PHONE_NO" CHAR(15),
-        	"COUNTRY" VARCHAR2(25)
-        	 );""")
-            cur.execute("""INSERT INTO AGENTS VALUES ('A007', 'Ramasundar', 'Bangalore', '0.15', '077-25814763', '');""")
-            conn.commit()
-            cur.close()
-            conn.close()
-        #connect to the database
-            await ctx.send("data sent!")
+    async def removebg(self,ctx,*,arg):
+        response = requests.post(
+            'https://api.remove.bg/v1.0/removebg',
+            data={
+                'image_url': f'{arg}',
+                'size': 'auto'
+            },
+            headers={'X-Api-Key': f'{remove_bg_api_key}'},
+        )
+        if response.status_code == requests.codes.ok:
+            with open('no-bg.png', 'wb') as out:
+                out.write(response.content)
+                await ctx.send("**Image with removed background:**",file=discord.File('no-bg.png'))
+                os.remove('no-bg.png')
+        else:
+            await ctx.send("An error occurred")
+    @commands.command()
+    async def cowsay(self,ctx,*,arg):
+        await ctx.send(f"""**{ctx.author.name}**: 
+``` 
+< {arg} >
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/
+                ||----w |
+                ||     ||  ```""")
 
 def setup(client):
     client.add_cog(MiscCog(client))

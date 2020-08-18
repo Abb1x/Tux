@@ -2,7 +2,9 @@
 import os
 import sys
 import time
+import psycopg2
 import discord
+
 from discord.ext import commands
 from decouple import config
 from discord.ext.commands import has_permissions
@@ -11,10 +13,24 @@ cd_mapping = commands.CooldownMapping.from_cooldown(12, 20, commands.BucketType.
 spamming = 0
 antispam = False
 token = config('TOKEN')
+server_in = False
+showcase_channel_id = 1
+upvote = "<:upvote:726140828090761217>"
+downvote = '<:downvote:726140881060757505>'
 #----------------------Header------------------------
 client = commands.Bot(command_prefix = '!')
 client.remove_command('help')
 #----------------------Commands----------------------
+def get_channel_id(server_id):
+    global showcase_channel_id
+    conn = psycopg2.connect("dbname='d3232lt1k8u332' user='lfhtzuomwrfrlb' host='ec2-35-173-94-156.compute-1.amazonaws.com' password='c8a897770748d7802579b93b44004582399992cee9684793f84bab71676c9fba' options='-c search_path=showcase_channel'")
+    cursor = conn.cursor()
+    postgreSQL_select_Query = "select * from servers where server_id = %s"
+
+    cursor.execute(postgreSQL_select_Query, (server_id,))
+    channels_records = cursor.fetchall()
+    for row in channels_records:
+        showcase_channel_id = row[1]
 @client.command()
 async def antispam(ctx,arg):
     global antispam
@@ -28,6 +44,9 @@ async def antispam(ctx,arg):
 @client.event
 async def on_message(message): #antispam
     global cd_mapping
+    #showcase stuff
+
+    get_channel_id(message.guild.id)
     global spamming
     global antispam
     overwrite = discord.PermissionOverwrite()
@@ -59,6 +78,13 @@ async def on_message(message): #antispam
         await message.channel.send("https://tenor.com/view/joey-mattle-blanc-friends-how-you-doin-gif-8921348")
     if message.content.startswith(('Hey','Hello','Hi','hello','hi','hey')):
         await message.add_reaction("👋")
+    #showcase stuff
+    if message.attachments:
+        if message.attachments[0].width is not None:
+            if message.channel.id == int(showcase_channel_id):
+                await message.add_reaction(upvote)
+                await message.add_reaction(downvote)
+
     await client.process_commands(message)
 @client.command()
 async def docs(ctx,*,arg):
@@ -87,6 +113,8 @@ extensions = [ #list of cogs to load
     "linux",
     #"error",
     "help",
+    "economy",
+    "welcome"
 ]
 #loading cogs
 if __name__ == "__main__":
@@ -124,6 +152,58 @@ ignore_command_errors = [ #ignore these commands when there's an error
     ("help", commands.MissingRequiredArgument),
     ("docs", commands.MissingRequiredArgument)
     ]
+#Database stuff
+#TODO Change to a cog?
+def add_server_to_db(server_id,channel_id):
+    conn = psycopg2.connect("dbname='d3232lt1k8u332' user='lfhtzuomwrfrlb' host='ec2-35-173-94-156.compute-1.amazonaws.com' password='c8a897770748d7802579b93b44004582399992cee9684793f84bab71676c9fba' options='-c search_path=showcase_channel'")
+    try:
+        sql = "INSERT INTO servers (server_id,channel_id) VALUES (%s,%s)"
+        cur = conn.cursor()
+        cur.execute(sql,(server_id,channel_id))
+        conn.commit()
+    finally:
+        conn.close()
+def id_exists(server_id):
+    global server_in
+    conn = psycopg2.connect("dbname='d3232lt1k8u332' user='lfhtzuomwrfrlb' host='ec2-35-173-94-156.compute-1.amazonaws.com' password='c8a897770748d7802579b93b44004582399992cee9684793f84bab71676c9fba' options='-c search_path=showcase_channel'")
+    cur = conn.cursor()
+    cur.execute("SELECT EXISTS(SELECT 1 FROM servers WHERE server_id = %s)", (server_id,))
+    if cur.fetchone()[0] == True:
+        server_in = True
+    else:
+        server_in=False
+def update_data(ch_id,serv_id):
+    conn = psycopg2.connect("dbname='d3232lt1k8u332' user='lfhtzuomwrfrlb' host='ec2-35-173-94-156.compute-1.amazonaws.com' password='c8a897770748d7802579b93b44004582399992cee9684793f84bab71676c9fba' options='-c search_path=showcase_channel'")
+    cur = conn.cursor()
+    cur.execute("UPDATE servers SET channel_id = %s WHERE server_id = %s;" % (ch_id,serv_id))
+    conn.commit()
+    conn.close()
+
+@client.command()
+@has_permissions(manage_messages=True)
+async def showcase(ctx,arg):
+    id_exists(ctx.guild.id)
+    id = arg.translate({ord(i): None for i in '<#>'})
+    try:
+        if server_in == False:
+            add_server_to_db(ctx.guild.id,id)
+            print("Server added to the list")
+            await ctx.send(f"Showcase channel set to {arg}!")
+        else:
+            update_data(id,ctx.guild.id)
+            print("Data updated")
+    except Exception:
+        await ctx.send("Please enter a valid channel!")
+@client.command()
+@has_permissions(manage_messages=True)
+async def rm_showcase(ctx):
+    conn = psycopg2.connect("dbname='d3232lt1k8u332' user='lfhtzuomwrfrlb' host='ec2-35-173-94-156.compute-1.amazonaws.com' password='c8a897770748d7802579b93b44004582399992cee9684793f84bab71676c9fba' options='-c search_path=showcase_channel'")
+    cur = conn.cursor()
+    cur.execute("DELETE FROM servers WHERE server_id = %s;",(ctx.guild.id,))
+    conn.commit()
+    conn.close()
+    showcase_channel_id = 0
+    await ctx.send("Showcase reversed!")
 #----------------------Start-------------------------
 @client.event
 async def on_connect():
@@ -135,7 +215,9 @@ async def on_ready():
     print('Bot online')
 @client.event
 async def on_guild_join(guild):
-    await client.change_presence(status=discord.Status.online, activity=discord.Game(f">help | {len(client.guilds)} servers"))
+    iter_length = len(list(client.get_all_members()))
+    await client.change_presence(status=discord.Status.online, activity=discord.Game(f">help | {len(client.guilds)} servers & {iter_length} users"))
+
 @client.event
 async def on_disconnect():
     print("Disconnected.\a")
