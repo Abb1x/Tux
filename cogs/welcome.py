@@ -2,7 +2,12 @@ import psycopg2
 import discord
 from discord.ext import commands
 from discord.ext.commands import has_permissions
+from decouple import config
 server_in = False
+db_pass = config("DB_PASS")
+db_user = config("DB_USER")
+db_host = config("DB_HOST")
+db_name = config("DB_NAME")
 class WelcomeCog(commands.Cog):
     def __init__(self,client):
         self.client = client
@@ -10,7 +15,7 @@ class WelcomeCog(commands.Cog):
     def get_welcome_message(self,server_id):
         global welcome_msg
         conn = psycopg2.connect(
-            "dbname='d3232lt1k8u332' user='lfhtzuomwrfrlb' host='ec2-35-173-94-156.compute-1.amazonaws.com' password='c8a897770748d7802579b93b44004582399992cee9684793f84bab71676c9fba' options='-c search_path=welcome'")
+            "dbname=db_name user=db_user host='db_host' password='db_pass' options='-c search_path=welcome'")
         cursor = conn.cursor()
         postgreSQL_select_Query = "select * from messages where server_id = %s"
 
@@ -20,7 +25,7 @@ class WelcomeCog(commands.Cog):
             welcome_msg = row[1]
     def add_server_to_db(self,server_id, message):
         conn = psycopg2.connect(
-            "dbname='d3232lt1k8u332' user='lfhtzuomwrfrlb' host='ec2-35-173-94-156.compute-1.amazonaws.com' password='c8a897770748d7802579b93b44004582399992cee9684793f84bab71676c9fba' options='-c search_path=welcome'")
+            "dbname=db_name user=db_user host='db_host' password='db_pass' options='-c search_path=welcome'")
         try:
             sql = "INSERT INTO messages (server_id,message) VALUES (%s,%s)"
             cur = conn.cursor()
@@ -32,7 +37,7 @@ class WelcomeCog(commands.Cog):
     def id_exists(self,server_id):
         global server_in
         conn = psycopg2.connect(
-              "dbname='d3232lt1k8u332' user='lfhtzuomwrfrlb' host='ec2-35-173-94-156.compute-1.amazonaws.com' password='c8a897770748d7802579b93b44004582399992cee9684793f84bab71676c9fba' options='-c search_path=welcome'")
+              "dbname=db_name user=db_user host='db_host' password='db_pass' options='-c search_path=welcome'")
         cur = conn.cursor()
         cur.execute("SELECT EXISTS(SELECT 1 FROM messages WHERE server_id = %s)", (server_id,))
         if cur.fetchone()[0] == True:
@@ -42,7 +47,7 @@ class WelcomeCog(commands.Cog):
 
     def update_data(self,message,serv_id):
         conn = psycopg2.connect(
-            "dbname='d3232lt1k8u332' user='lfhtzuomwrfrlb' host='ec2-35-173-94-156.compute-1.amazonaws.com' password='c8a897770748d7802579b93b44004582399992cee9684793f84bab71676c9fba' options='-c search_path=welcome'")
+            "dbname=db_name user=db_user host='db_host' password='db_pass' options='-c search_path=welcome'")
         cur = conn.cursor()
         cur.execute("UPDATE messages SET message = '%s' WHERE server_id = %s;" % (message, serv_id))
         conn.commit()
@@ -62,7 +67,7 @@ class WelcomeCog(commands.Cog):
     async def rm_welcome(self,ctx):
         global welcome_msg
         conn = psycopg2.connect(
-            "dbname='d3232lt1k8u332' user='lfhtzuomwrfrlb' host='ec2-35-173-94-156.compute-1.amazonaws.com' password='c8a897770748d7802579b93b44004582399992cee9684793f84bab71676c9fba' options='-c search_path=welcome'")
+            "dbname=db_name user=db_user host='db_host' password='db_pass' options='-c search_path=welcome'")
         cur = conn.cursor()
         cur.execute("DELETE FROM messages WHERE server_id = %s;", (ctx.guild.id,))
         conn.commit()
