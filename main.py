@@ -4,32 +4,37 @@ import sys
 import time
 import psycopg2
 import discord
-
 from discord.ext import commands
 from decouple import config
 from discord.ext.commands import has_permissions
+
 print(f"Discord.py Version: {discord.__version__}")
 cd_mapping = commands.CooldownMapping.from_cooldown(12, 20, commands.BucketType.member)
 spamming = 0
 antispam = False
-token = config('TOKEN')
 server_in = False
 showcase_channel_id = 1
 upvote = "<:upvote:726140828090761217>"
 downvote = '<:downvote:726140881060757505>'
-db_pass = config("DB_PASS")
-db_user = config("DB_USER")
-db_host = config("DB_HOST")
-db_name = config("DB_NAME")
+
+# Bot Administrators: USE THIS TO CONFIGURE BOT FOR HOSTING
+token = config('TOKEN') # Get this from https://discord.com/developers/applications/
+# Don't share this information with anyone. Requires a PostgreSQL server.
+db_pass = config("DB_PASS") # Yes, plain text. Your users won't be able to see this.
+db_user = config("DB_USER") # Using the 'root' user isn't recommended. Use another unique account if possible.
+db_host = config("DB_HOST") # Host of the computer serving the database. May look like 'db.example.com', or 'localhost'
+db_name = config("DB_NAME") # The name of the database, the name which you place as an argument to the 'USE' command when interacting through a CLI to the db.
+
 #----------------------Header------------------------
 client = commands.Bot(command_prefix = '!')
 client.remove_command('help')
+
 #----------------------Commands----------------------
 def get_channel_id(server_id):
     global showcase_channel_id
     conn = psycopg2.connect("dbname=db_name user=db_user host=db_host password=db_pass options='-c search_path=showcase_channel'")
     cursor = conn.cursor()
-    postgreSQL_select_Query = "select * from servers where server_id = %s"
+    postgreSQL_select_Query = "SELECT * FROM servers WHERE server_id = %s"
 
     cursor.execute(postgreSQL_select_Query, (server_id,))
     channels_records = cursor.fetchall()
@@ -40,15 +45,15 @@ async def antispam(ctx,arg):
     global antispam
     if arg == "on":
         antispam = True
-        await ctx.send("Antispam turned **on** !")
+        await ctx.send("Antispam is turned **on** !")
     if arg == "off":
         antispam = False
-        await ctx.send("Antispam turned **off** !")
+        await ctx.send("Antispam is turned **off** !")
 # The commands in this section should, at some point, be moved to the appropriate cog.
 @client.event
-async def on_message(message): #antispam
+async def on_message(message): # Controls Antispam
     global cd_mapping
-    #showcase stuff
+    # Controls Showcase Functions
 
     get_channel_id(message.guild.id)
     global spamming
@@ -65,7 +70,7 @@ async def on_message(message): #antispam
 
                     spamming += 1
                     if spamming < 3:
-                        await message.channel.send(f"{message.author.mention} **stop spamming!**")
+                        await message.channel.send(f"{message.author.mention} **Stop Spamming!**")
                         if spamming > 3:
                             spamming = 0
                         if spamming == 3:
@@ -82,7 +87,7 @@ async def on_message(message): #antispam
         await message.channel.send("https://tenor.com/view/joey-mattle-blanc-friends-how-you-doin-gif-8921348")
     if message.content.startswith(('Hey','Hello','Hi','hello','hi','hey')):
         await message.add_reaction("👋")
-    #showcase stuff
+    # Controls Showcase Functions
     if message.attachments:
         if message.attachments[0].width is not None:
             if message.channel.id == int(showcase_channel_id):
@@ -93,25 +98,27 @@ async def on_message(message): #antispam
 @client.command()
 async def docs(ctx,*,arg):
     distros = {
-    "ubuntu": "https://docs.ubuntu.com/",
-    "arch": "https://wiki.archlinux.org/",
-    "gentoo": "https://wiki.gentoo.org/wiki/Main_Page",
-    "fedora": "https://docs.fedoraproject.org/en-US/docs/",
-    "debian": "https://www.debian.org/doc/",
-    "manjaro": "https://wiki.manjaro.org",
-    "opensuse": "https://doc.opensuse.org/",
-    "kali": "https://www.kali.org/docs/",
-    "zorin": "https://zorinos.com/",
-    "mint": "https://linuxmint.com/documentation.php",
-    "venom": "https://osdn.net/projects/venomlinux/wiki/FrontPage",
-    "elementary": "https://elementary.io/docs",
-    "clear": "https://docs.clearos.com/en"
+    "Ubuntu": "https://docs.ubuntu.com/",
+    "Arch": "https://wiki.archlinux.org/",
+    "Gentoo": "https://wiki.gentoo.org/wiki/Main_Page",
+    "Fedora": "https://docs.fedoraproject.org/en-US/docs/",
+    "Debian": "https://www.debian.org/doc/",
+    "Manjaro": "https://wiki.manjaro.org",
+    "OpenSUSE": "https://doc.opensuse.org/",
+    "Kali": "https://www.kali.org/docs/",
+    "Zorin": "https://zorinos.com/",
+    "Mint": "https://linuxmint.com/documentation.php",
+    "Venom": "https://osdn.net/projects/venomlinux/wiki/FrontPage",
+    "Elementary": "https://elementary.io/docs",
+    "Clear": "https://docs.clearos.com/en",
+    "Sparky": "https://wiki.sparkylinux.org/doku.php"
     }
     distro = distros[arg]
     if arg in distros:
-        await ctx.send(f"Here are the officials docs for {arg}: {distro}")
+        await ctx.send(f"Here are the Official Docs for {arg}: {distro}")
+        
 #----------------------Cogs--------------------------
-extensions = [ #list of cogs to load
+extensions = [ # list of cogs to load
     "moderation",
     "misc",
     "linux",
@@ -127,7 +134,8 @@ if __name__ == "__main__":
         client.load_extension(f"cogs.{extension}")
         print(f"\tLoaded {extension}")
     print("")
-#----------------------Error handling-------------------------
+    
+#----------------------Error Handling-------------------------
 
 @docs.error
 async def docs_error(ctx,error) :
@@ -150,14 +158,15 @@ async def docs_error(ctx,error) :
             embed.add_field(name="Venom",value="venom",inline=False)
             embed.add_field(name="ElementaryOS",value="elementary",inline=False)
             embed.add_field(name="ClearOS",value="clear",inline=False)
+            embed.add_field(name="Sparky",value="sparky",inline=False)
             await ctx.send(embed=embed)
 
-ignore_command_errors = [ #ignore these commands when there's an error
+ignore_command_errors = [ # ignore these commands when there's an error
     ("help", commands.MissingRequiredArgument),
     ("docs", commands.MissingRequiredArgument)
     ]
-#Database stuff
-#TODO Change to a cog?
+# Database stuff
+# TODO Change to a cog?
 def add_server_to_db(server_id,channel_id):
     conn = psycopg2.connect("dbname=db_name user=db_user host=db_host password=db_pass options='-c search_path=showcase_channel'")
     try:
@@ -207,7 +216,8 @@ async def rm_showcase(ctx):
     conn.commit()
     conn.close()
     showcase_channel_id = 0
-    await ctx.send("Showcase reversed!")
+    await ctx.send("Showcase Reversed!")
+    
 #----------------------Start-------------------------
 @client.event
 async def on_connect():
@@ -216,7 +226,7 @@ async def on_connect():
 async def on_ready():
     iter_length = len(list(client.get_all_members()))
     await client.change_presence(status=discord.Status.online, activity=discord.Game(f">help | {len(client.guilds)} servers & {iter_length} users"))
-    print('Bot online')
+    print('Bot Online')
 @client.event
 async def on_guild_join(guild):
     iter_length = len(list(client.get_all_members()))
@@ -225,5 +235,6 @@ async def on_guild_join(guild):
 @client.event
 async def on_disconnect():
     print("Disconnected.\a")
+    
 #----------------------Footer------------------------
 client.run(token)
