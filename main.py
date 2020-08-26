@@ -22,12 +22,12 @@ db_user = config("DB_USER")
 db_host = config("DB_HOST")
 db_name = config("DB_NAME")
 #----------------------Header------------------------
-client = commands.Bot(command_prefix = '!')
+client = commands.Bot(command_prefix = (('tux ','!')))
 client.remove_command('help')
 #----------------------Commands----------------------
 def get_channel_id(server_id):
     global showcase_channel_id
-    conn = psycopg2.connect("dbname=db_name user=db_user host=db_host password=db_pass options='-c search_path=showcase_channel'")
+    conn = psycopg2.connect(f"dbname={db_name} user={db_user} host={db_host} password={db_pass} options='-c search_path=showcase_channel'")
     cursor = conn.cursor()
     postgreSQL_select_Query = "select * from servers where server_id = %s"
 
@@ -159,7 +159,7 @@ ignore_command_errors = [ #ignore these commands when there's an error
 #Database stuff
 #TODO Change to a cog?
 def add_server_to_db(server_id,channel_id):
-    conn = psycopg2.connect("dbname=db_name user=db_user host=db_host password=db_pass options='-c search_path=showcase_channel'")
+    conn = psycopg2.connect(f"dbname={db_name} user={db_user} host={db_host} password={db_pass} options='-c search_path=showcase_channel'")
     try:
         sql = "INSERT INTO servers (server_id,channel_id) VALUES (%s,%s)"
         cur = conn.cursor()
@@ -169,7 +169,7 @@ def add_server_to_db(server_id,channel_id):
         conn.close()
 def id_exists(server_id):
     global server_in
-    conn = psycopg2.connect("dbname=db_name user=db_user host=db_host password=db_pass options='-c search_path=showcase_channel'")
+    conn = psycopg2.connect(f"dbname={db_name} user={db_user} host={db_host} password={db_pass} options='-c search_path=showcase_channel'")
     cur = conn.cursor()
     cur.execute("SELECT EXISTS(SELECT 1 FROM servers WHERE server_id = %s)", (server_id,))
     if cur.fetchone()[0] == True:
@@ -177,7 +177,7 @@ def id_exists(server_id):
     else:
         server_in=False
 def update_data(ch_id,serv_id):
-    conn = psycopg2.connect("dbname=db_name user=db_user host=db_host password=db_pass options='-c search_path=showcase_channel'")
+    conn = psycopg2.connect(f"dbname={db_name} user={db_user} host={db_host} password={db_pass} options='-c search_path=showcase_channel'")
     cur = conn.cursor()
     cur.execute("UPDATE servers SET channel_id = %s WHERE server_id = %s;" % (ch_id,serv_id))
     conn.commit()
