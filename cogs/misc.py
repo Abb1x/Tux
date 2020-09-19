@@ -1,5 +1,8 @@
+import asyncio
 import os
 import pathlib
+
+import aiohttp
 import discord
 from discord.ext import commands
 import random
@@ -10,6 +13,8 @@ import requests #used to send get request
 import psycopg2
 import praw
 from decouple import config
+
+import datetime
 #api key for weather api
 #api key for weather
 reddit_secret = config("REDDIT_SECRET")
@@ -21,7 +26,7 @@ base_url = "http://api.openweathermap.org/data/2.5/weather?"
 upvote = "<:upvote:726140828090761217>"
 downvote = '<:downvote:726140881060757505>'
 remove_bg_api_key=config("REMOVEBG_KEY")
-
+start = datetime.datetime.now().replace(microsecond=0)
 #Cog for misc commands
 class MiscCog(commands.Cog):
     def __init__(self, client):
@@ -103,24 +108,16 @@ class MiscCog(commands.Cog):
         await ctx.send(embed=embed)
     @commands.command(aliases=['wikipedia','pedia'])
     async def wiki(self,ctx,*,arg):
-
         search = wikipedia.search(f"{arg}")
         result = search[0]
-        id = result.replace('4', '')
-        page = wikipedia.page(f"{id}")
-        wiki = wikipedia.summary(f"{id}",sentences=1)
+        page = wikipedia.page(f"{result}",auto_suggest=False)
+        wiki = wikipedia.summary(f"{result}",sentences=1,auto_suggest=False)
         images = page.images
         rand = random.randint(1,20)
         embed=discord.Embed(title="Wikipedia", colour=0xf4eded)
         embed.add_field(name="Search", value=f"`{arg}`", inline=False)
         embed.add_field(name="Result", value=f"`{wiki}`", inline=True)
-        embed.set_thumbnail(url=f"{images[rand]}")
-        if "svg" in images[rand]:
-                embed.set_thumbnail(url=f"{images[random.randint(1,20)]}")
-        if "webm" in images[rand]:
-                embed.set_thumbnail(url=f"{images[random.randint(1,20)]}")
-        if "webp" in images[rand]:
-                embed.set_thumbnail(url=f"{images[random.randint(1,20)]}")
+        embed.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png")
         await ctx.send(embed=embed)
     @commands.command()
     async def weather(self,ctx,*,arg):
@@ -195,6 +192,17 @@ class MiscCog(commands.Cog):
             message = await ctx.send(embed=embed)
             await message.add_reaction(upvote)
             await message.add_reaction(downvote)
+            await message.add_reaction("🗑️")
+
+            def check(reaction, user):
+                return user == ctx.message.author and str(reaction.emoji) == '🗑️'
+
+            try:
+                await self.client.wait_for('reaction_add', timeout=60.0, check=check)
+            except asyncio.TimeoutError:
+                pass
+            else:
+                await message.delete()
         except:
             await ctx.send("Sorry, an error occurred please retry")
     @commands.command()
@@ -223,11 +231,15 @@ class MiscCog(commands.Cog):
             await ctx.send(embed=embed)
     @commands.command()
     async def info(self,ctx):
+        global start
+        end = datetime.datetime.now().replace(microsecond=0)
+        uptime = end - start
         embed=discord.Embed(colour=discord.Colour.blue())
         embed.set_author(name="Tux v0.5",icon_url="https://images-ext-1.discordapp.net/external/o0qmGA7HWp5CLR0_qdh4ISSemzj4JIQivBJxVbFChwM/%3Fsize%3D1024/https/cdn.discordapp.com/avatars/725734772479098880/b266fa6609aab9d47d65a6f9687f09ba.webp?width=549&height=549")
         embed.add_field(name=f"Ping: {round(self.client.latency * 1000)}ms", value="\u200b", inline=False)
         embed.add_field(name=f"Library: Discord.py 1.3.4 ", value="\u200b", inline=False)
         embed.add_field(name=f"Servers: {len(self.client.guilds)} ", value="\u200b", inline=False)
+        embed.add_field(name=f"Uptime: {uptime}",value="\u200b", inline=False)
         embed.add_field(name=f"Created by: <:abbix:738920766451482714> Abbix#4319", value="\u200b", inline=False)
         await ctx.send(embed=embed)
     @commands.command()
@@ -247,6 +259,24 @@ class MiscCog(commands.Cog):
                 os.remove('no-bg.png')
         else:
             await ctx.send("An error occurred")
+    @commands.command(aliases=['rps'])
+    async def rockpaperscissors(self,ctx,move):
+        choices = ["Rock","Paper","Scissors"]
+        choice = random.choice(choices)
+        if choice == "Rock" and move == "scissors":
+            await ctx.send(f"I choose **{choice}**, I won!")
+        if choice == "Paper" and move == "rock":
+            await ctx.send(f"I choose **{choice}**, I won!")
+        if choice == "Scissors" and move == "paper":
+            await ctx.send(f"I choose **{choice}**, I won!")
+        if choice.lower() == move:
+            await ctx.send(f"I choose **{choice}**, Nobody won :(")
+        if choice == "Paper" and move == "scissors":
+            await ctx.send(f"I choose **{choice}**, You won!")
+        if choice == "Scissors" and move == "rock":
+            await ctx.send(f"I choose **{choice}**, You won!")
+        if choice == "Rock" and move == "paper":
+            await ctx.send(f"I choose **{choice}**, You won!")
     @commands.command()
     async def cowsay(self,ctx,*,arg):
         await ctx.send(f"""**{ctx.author.name}**: 

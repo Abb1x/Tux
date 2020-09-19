@@ -115,7 +115,10 @@ extensions = [ #list of cogs to load
     "moderation",
     "misc",
     "linux",
+    "music",
     #"error",
+    "captcha",
+    "level",
     "help",
     "economy",
     "welcome"
@@ -225,5 +228,6 @@ async def on_guild_join(guild):
 @client.event
 async def on_disconnect():
     print("Disconnected.\a")
+
 #----------------------Footer------------------------
 client.run(token)

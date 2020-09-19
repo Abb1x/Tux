@@ -1,77 +1,101 @@
+import discord
+import youtube_dl
 
 from discord.ext import commands
-import lavalink
-from discord import utils
-from discord import Embed
+
+# Suppress noise about console usage from errors
+youtube_dl.utils.bug_reports_message = lambda: ''
 
 
-class MusicCog(commands.Cog):
-  def __init__(self, client):
-    self.client = client
-    self.client.music = lavalink.Client(714896470012067922)
-    self.client.music.add_node('localhost', 7000, 'testing', 'na', 'music-node')
-    self.client.add_listener(self.client.music.voice_update_handler, 'on_socket_response')
-    self.client.music.add_event_hook(self.track_hook)
+ytdl_format_options = {
+    'format': 'bestaudio/best',
+    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
+    'restrictfilenames': True,
+    'noplaylist': True,
+    'nocheckcertificate': True,
+    'ignoreerrors': False,
+    'logtostderr': False,
+    'quiet': True,
+    'no_warnings': True,
+    'default_search': 'auto',
+    'source_address': '0.0.0.0' # bind to ipv4 since ipv6 addresses cause issues sometimes
+}
 
-  @commands.command(name='join')
-  async def join(self, ctx):
-    print('join command worked')
-    member = utils.find(lambda m: m.id == ctx.author.id, ctx.guild.members)
-    if member is not None and member.voice is not None:
-      vc = member.voice.channel
-      player = self.client.music.player_manager.create(ctx.guild.id, endpoint=str(ctx.guild.region))
-      if not player.is_connected:
-        player.store('channel', ctx.channel.id)
-        await self.connect_to(ctx.guild.id, str(vc.id))
-  @commands.command()
-  async def stop(self,ctx):
-      await ctx.voice_client.disconnect()
-  @commands.command()
-  async def play(self, ctx, *, query):
-    member = utils.find(lambda m: m.id == ctx.author.id, ctx.guild.members)
-    if member is not None and member.voice is not None:
-      vc = member.voice.channel
-      player = self.client.music.player_manager.create(ctx.guild.id, endpoint=str(ctx.guild.region))
-      if not player.is_connected:
-        player.store('channel', ctx.channel.id)
-        await self.connect_to(ctx.guild.id, str(vc.id))
-    try:
-      player = self.client.music.player_manager.get(ctx.guild.id)
-      query = f'ytsearch:{query}'
-      results = await player.node.get_tracks(query)
-      tracks = results['tracks'][0:10]
-      i = 0
-      query_result = ''
-      for track in tracks:
-        i = i + 1
-        query_result = query_result + f'{i}) {track["info"]["title"]} - {track["info"]["uri"]}\n'
-      embed = Embed()
-      embed.description = query_result
+ffmpeg_options = {
+    'options': '-vn'
+}
 
-      await ctx.channel.send(embed=embed)
-      await ctx.channel.send("Please choose with the number: ")
+ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
-      def check(m):
-        return m.author.id == ctx.author.id
 
-      response = await self.client.wait_for('message', check=check)
-      track = tracks[int(response.content)-1]
+class YTDLSource(discord.PCMVolumeTransformer):
+    def __init__(self, source, *, data, volume=0.5):
+        super().__init__(source, volume)
 
-      player.add(requester=ctx.author.id, track=track)
-      if not player.is_playing:
-        await player.play()
+        self.data = data
 
-    except Exception as error:
-      print(error)
+        self.title = data.get('title')
+        self.url = data.get('url')
 
-  async def track_hook(self, event):
-    if isinstance(event, lavalink.events.QueueEndEvent):
-      guild_id = int(event.player.guild_id)
-      await self.connect_to(guild_id, None)
+    @classmethod
+    async def from_url(cls, url, *, loop=None, stream=False):
+        loop = loop or asyncio.get_event_loop()
+        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
 
-  async def connect_to(self, guild_id: int, channel_id: str):
-    ws = self.client._connection._get_websocket(guild_id)
-    await ws.voice_state(str(guild_id), channel_id)
+        if 'entries' in data:
+            # take first item from a playlist
+            data = data['entries'][0]
+
+        filename = data['url'] if stream else ytdl.prepare_filename(data)
+        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
+
+
+class Music(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+
+    @commands.command()
+    async def play(self, ctx, *, url):
+        """Streams from a url (same as yt, but doesn't predownload)"""
+        if not ctx.voice_client is not None:
+            await ctx.author.voice.channel.connect()
+        async with ctx.typing():
+            player = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
+            ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
+
+        await ctx.send('Now playing: **{}**'.format(player.title))
+
+    @commands.command()
+    async def volume(self, ctx, volume: int):
+        """Changes the player's volume"""
+
+        if ctx.voice_client is None:
+            return await ctx.send("Not connected to a voice channel.")
+
+        ctx.voice_client.source.volume = volume / 100
+        await ctx.send("Changed volume to {}%".format(volume))
+
+    @commands.command()
+    async def stop(self, ctx):
+        """Stops and disconnects the bot from voice"""
+        if ctx.voice_client is not None:
+                await ctx.voice_client.disconnect()
+        else:
+            await ctx.send("No music is currently playing")
+
+    @play.before_invoke
+    async def ensure_voice(self, ctx):
+        if ctx.voice_client is None:
+            if ctx.author.voice:
+                await ctx.author.voice.channel.connect()
+            else:
+                await ctx.send("You are not connected to a voice channel.")
+                raise commands.CommandError("Author not connected to a voice channel.")
+        elif ctx.voice_client.is_playing():
+            ctx.voice_client.stop()
+
 
 def setup(client):
-  client.add_cog(MusicCog(client))
+  client.add_cog(Music(client))
+

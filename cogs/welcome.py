@@ -15,7 +15,7 @@ class WelcomeCog(commands.Cog):
     def get_welcome_message(self,server_id):
         global welcome_msg
         conn = psycopg2.connect(
-            "dbname=db_name user=db_user host='db_host' password='db_pass' options='-c search_path=welcome'")
+            f"dbname={db_name} user={db_user} host={db_host} password={db_pass} options='-c search_path=welcome'")
         cursor = conn.cursor()
         postgreSQL_select_Query = "select * from messages where server_id = %s"
 
@@ -25,7 +25,7 @@ class WelcomeCog(commands.Cog):
             welcome_msg = row[1]
     def add_server_to_db(self,server_id, message):
         conn = psycopg2.connect(
-            "dbname=db_name user=db_user host='db_host' password='db_pass' options='-c search_path=welcome'")
+            f"dbname={db_name} user={db_user} host={db_host} password={db_pass} options='-c search_path=welcome'")
         try:
             sql = "INSERT INTO messages (server_id,message) VALUES (%s,%s)"
             cur = conn.cursor()
@@ -36,8 +36,7 @@ class WelcomeCog(commands.Cog):
 
     def id_exists(self,server_id):
         global server_in
-        conn = psycopg2.connect(
-              "dbname=db_name user=db_user host='db_host' password='db_pass' options='-c search_path=welcome'")
+        conn = psycopg2.connect(f"dbname={db_name} user={db_user} host={db_host} password={db_pass} options='-c search_path=welcome'")
         cur = conn.cursor()
         cur.execute("SELECT EXISTS(SELECT 1 FROM messages WHERE server_id = %s)", (server_id,))
         if cur.fetchone()[0] == True:
@@ -47,7 +46,7 @@ class WelcomeCog(commands.Cog):
 
     def update_data(self,message,serv_id):
         conn = psycopg2.connect(
-            "dbname=db_name user=db_user host='db_host' password='db_pass' options='-c search_path=welcome'")
+            f"dbname={db_name} user={db_user} host={db_host} password={db_pass} options='-c search_path=welcome'")
         cur = conn.cursor()
         cur.execute("UPDATE messages SET message = '%s' WHERE server_id = %s;" % (message, serv_id))
         conn.commit()
@@ -67,7 +66,7 @@ class WelcomeCog(commands.Cog):
     async def rm_welcome(self,ctx):
         global welcome_msg
         conn = psycopg2.connect(
-            "dbname=db_name user=db_user host='db_host' password='db_pass' options='-c search_path=welcome'")
+            f"dbname={db_name} user={db_user} host={db_host} password={db_pass} options='-c search_path=welcome'")
         cur = conn.cursor()
         cur.execute("DELETE FROM messages WHERE server_id = %s;", (ctx.guild.id,))
         conn.commit()
@@ -79,16 +78,18 @@ class WelcomeCog(commands.Cog):
         print(welcome_msg)
     @commands.Cog.listener()
     async def on_member_join(self,member):
+        self.id_exists(member.guild.id)
         global welcome_msg
-        channel = self.client.get_channel(member.guild.system_channel.id)
-        self.get_welcome_message(member.guild.id)
-        if "{mention}" in welcome_msg:
-            formatted_msg = welcome_msg.replace("{mention}",f"{member.mention}")
-        if "{server_name}" in welcome_msg:
-            formatted_msg = welcome_msg.replace("{server_name}",f"{member.guild.name}")
-        if "{server_name}" in welcome_msg and "{mention}" in welcome_msg:
-            formatted_msg = welcome_msg.replace("{server_name}", f"{member.guild.name}")
-            formatted_msg = formatted_msg.replace("{mention}",f"{member.mention}")
-        await channel.send(formatted_msg)
+        if server_in == True:
+            channel = self.client.get_channel(member.guild.system_channel.id)
+            self.get_welcome_message(member.guild.id)
+            if "{mention}" in welcome_msg:
+                formatted_msg = welcome_msg.replace("{mention}",f"{member.mention}")
+            if "{server_name}" in welcome_msg:
+                formatted_msg = welcome_msg.replace("{server_name}",f"{member.guild.name}")
+            if "{server_name}" in welcome_msg and "{mention}" in welcome_msg:
+                formatted_msg = welcome_msg.replace("{server_name}", f"{member.guild.name}")
+                formatted_msg = formatted_msg.replace("{mention}",f"{member.mention}")
+            await channel.send(formatted_msg)
 def setup(client):
     client.add_cog(WelcomeCog(client))

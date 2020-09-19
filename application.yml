@@ -1,6 +1,6 @@
 server: # REST and WS server
   port: 7000
-  address: 0.0.0.0
+  address: localhost
 lavalink:
   server:
     password: "testing"

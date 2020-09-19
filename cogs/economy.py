@@ -17,7 +17,7 @@ class EconomyCog(commands.Cog):
         self.client = client
     def add_user_to_db(self,server_id,user_id):
         player_id = f"{user_id}"
-        conn = psycopg2.connect("dbname=db_name user=db_user host=db_host password='db_pass' options='-c search_path=economy'")
+        conn = psycopg2.connect(f"dbname={db_name} user={db_user} host={db_host} password={db_pass} options='-c search_path=economy'")
         try:
             sql = "INSERT INTO players (server_id,user_id,money) VALUES (%s,%s,0)"
             cur = conn.cursor()
@@ -27,7 +27,7 @@ class EconomyCog(commands.Cog):
             conn.close()
     def get_money(self,server_id,user_id):
         global money
-        conn = psycopg2.connect("dbname=db_name user=db_user host=db_host password=db_pass options='-c search_path=economy'")
+        conn = psycopg2.connect(f"dbname={db_name} user={db_user} host={db_host} password={db_pass} options='-c search_path=economy'")
         cursor = conn.cursor()
         postgreSQL_select_Query = "select * from players where server_id = %s and user_id = %s"
 
@@ -35,13 +35,14 @@ class EconomyCog(commands.Cog):
         money_records = cursor.fetchall()
         for row in money_records:
             money = row[2]
+        return money
     def update_money_crime(self,server_id,user_id):
             self.get_money(server_id,user_id)
             global money
             global crime_amount
             crime_amount = random.randint(-900,700)
             money += crime_amount
-            conn = psycopg2.connect("dbname=db_name user=db_user host=db_host password=db_pass options='-c search_path=economy'")
+            conn = psycopg2.connect(f"dbname={db_name} user={db_user} host={db_host} password={db_pass} options='-c search_path=economy'")
             try:
                 sql = "UPDATE players SET money = %s WHERE server_id = %s AND user_id = %s" % (money,server_id,user_id)
                 cur = conn.cursor()
@@ -55,7 +56,7 @@ class EconomyCog(commands.Cog):
             global work_amount
             work_amount = random.randint(0,500)
             money += work_amount
-            conn = psycopg2.connect("dbname=db_name user=db_user host=db_host password=db_pass options='-c search_path=economy'")
+            conn = psycopg2.connect(f"dbname={db_name} user={db_user} host={db_host} password={db_pass} options='-c search_path=economy'")
             try:
                 sql = "UPDATE players SET money = %s WHERE server_id = %s AND user_id = %s" % (money,server_id,user_id)
                 cur = conn.cursor()
@@ -70,7 +71,7 @@ class EconomyCog(commands.Cog):
 
             mine_amount = random.randint(-500,500)
             money += mine_amount
-            conn = psycopg2.connect("dbname=db_name user=db_user host=db_host password=db_pass options='-c search_path=economy'")
+            conn = psycopg2.connect(f"dbname={db_name} user={db_user} host={db_host} password={db_pass} options='-c search_path=economy'")
             try:
                 sql = "UPDATE players SET money = %s WHERE server_id = %s AND user_id = %s" % (money,server_id,user_id)
                 cur = conn.cursor()
@@ -79,7 +80,7 @@ class EconomyCog(commands.Cog):
             finally:
                 conn.close()
     def check_user_db(self,server_id,user_id):
-        conn = psycopg2.connect("dbname=db_name user=db_user host=db_host password=db_pass options='-c search_path=economy'")
+        conn = psycopg2.connect(f"dbname={db_name} user={db_user} host={db_host} password={db_pass} options='-c search_path=economy'")
         cur = conn.cursor()
         cur.execute("SELECT EXISTS(SELECT 1 FROM players WHERE server_id = %s AND user_id = %s)", (server_id,user_id))
         return cur.fetchone()[0]
@@ -142,9 +143,10 @@ class EconomyCog(commands.Cog):
             await ctx.send(f"You got : {mine_amount} $ !")
         else:
             await ctx.send(f"You lost : {mine_amount} $ !")
+
     @commands.Cog.listener()
     async def on_guild_remove(self,guild):
-        conn = psycopg2.connect("dbname=db_name user=db_user host=db_host password=db_pass options='-c search_path=economy'")
+        conn = psycopg2.connect(f"dbname={db_name} user={db_user} host={db_host} password={db_pass} options='-c search_path=economy'")
         cur = conn.cursor()
         cur.execute("DELETE FROM players WHERE server_id = %s;",(guild.id,))
         conn.commit()

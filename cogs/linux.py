@@ -3,8 +3,10 @@ from discord.ext import commands
 import praw
 import random
 import requests
+import asyncio
 import json
 import os
+from bs4 import BeautifulSoup
 from decouple import config
 reddit_secret = config("REDDIT_SECRET")
 from datetime import datetime
@@ -43,7 +45,17 @@ class LinuxCog(commands.Cog):
         message = await ctx.send(embed=embed)
         await message.add_reaction(upvote)
         await message.add_reaction(downvote)
-    @commands.command()
+        await message.add_reaction("🗑️")
+        def check(reaction, user):
+            return user == ctx.message.author and str(reaction.emoji) == '🗑️'
+
+        try:
+            await self.client.wait_for('reaction_add', timeout=60.0, check=check)
+        except asyncio.TimeoutError:
+            pass
+        else:
+            await message.delete()
+    @commands.command(aliases=['pkg'])
     async def package(self,ctx,arg,arg2):
         if arg == "apt":
             pkg_url = "https://sources.debian.org/api/src/" + arg2 + "/"
@@ -54,7 +66,18 @@ class LinuxCog(commands.Cog):
                 version = f["versions"][0]["version"]
                 embed=discord.Embed(title=f"{arg2}",color=0xd70751,description=f"sudo apt install {arg2}")
                 embed.add_field(name="Version:",value=f"{version}")
-                await ctx.send(embed=embed)
+                message = await ctx.send(embed=embed)
+                await message.add_reaction("🗑️")
+
+                def check(reaction, user):
+                    return user == ctx.message.author and str(reaction.emoji) == '🗑️'
+
+                try:
+                    await self.client.wait_for('reaction_add', timeout=60.0, check=check)
+                except asyncio.TimeoutError:
+                    pass
+                else:
+                    await message.delete()
             else:
                 srch_url = "https://sources.debian.org/api/search/" + arg2 + "/"
                 srch = requests.get(srch_url)
@@ -78,7 +101,18 @@ class LinuxCog(commands.Cog):
                 embed.add_field(name="Version:",value=f"{version}",inline=False)
                 embed.add_field(name="Description:",value=f"{desc}",inline=False)
                 embed.add_field(name="Link:",value=f"{link}",inline=False)
-                await ctx.send(embed=embed)
+                message = await ctx.send(embed=embed)
+                await message.add_reaction("🗑️")
+
+                def check(reaction, user):
+                    return user == ctx.message.author and str(reaction.emoji) == '🗑️'
+
+                try:
+                    await self.client.wait_for('reaction_add', timeout=60.0, check=check)
+                except asyncio.TimeoutError:
+                    pass
+                else:
+                    await message.delete()
             if not ["results"][1] in f:
                 embed = discord.Embed(title=f"Package Not found",colour=discord.Colour.red())
                 await ctx.send(embed=embed)
@@ -109,5 +143,16 @@ class LinuxCog(commands.Cog):
         else:
             embed = discord.Embed(description=f":x: │ **Question not found**",colour=discord.Colour.red())
             await ctx.send(embed=embed)
+        await embed.add_reaction("🗑️")
+
+        def check(reaction, user):
+            return user == ctx.message.author and str(reaction.emoji) == '🗑️'
+
+        try:
+            await self.client.wait_for('reaction_add', timeout=60.0, check=check)
+        except asyncio.TimeoutError:
+            pass
+        else:
+            await embed.delete()
 def setup(client):
     client.add_cog(LinuxCog(client))

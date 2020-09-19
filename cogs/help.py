@@ -25,6 +25,7 @@ class HelpCog(commands.Cog):
             embed.add_field(name='`>unmute [member]`',value="Unmute someone",inline=False)
             embed.add_field(name='`>welcome [message] {mention} {server_name}`',value="Set a welcome message in system channel, arguments in {} are replaced by their respective value")
             embed.add_field(name='`>rm_welcome`',value="Delete the welcome message")
+            embed.add_field(name='`>captcha [enable/disable] [channel]`', value="Sends a captcha to solve on member join")
         if arg == "linux":
                 embed.add_field(name='`>compgen -c`', value='Gives you a list of linux commands', inline=False)
                 embed.add_field(name='`>docs [distro]`', value='Send you a link of officials docs of chosen distro (no value = list of distros)', inline=False)
@@ -50,10 +51,19 @@ class HelpCog(commands.Cog):
             embed.add_field(name="`>dankmeme`", value="Sends a meme from r/memes", inline=False)
             embed.add_field(name="`>removebg [image url]`", value="Remove background from an image (powered by remove.bg)", inline=False)
             embed.add_field(name="`>cowsay [message]`", value="The unix command: cowsay",inline=False)
+            embed.add_field(name="`>rps [move]`", value="Rock paper scissors!", inline=False)
         if arg == "economy":
             embed.add_field(name='`>work`', value='Work', inline=False)
             embed.add_field(name='`>crime`', value='Crime', inline=False)
             embed.add_field(name='`>balance`', value='Balance', inline=False)
+        if arg == "music":
+            embed.add_field(name='`>play [song/url]`', value='Plays a music! (streaming from youtube, quality might not be good)', inline=False)
+            embed.add_field(name='`>volume [volume]`', value='Set the volume', inline=False)
+            embed.add_field(name='`>stop`', value='disconnects the bot', inline=False)
+        if arg == "level":
+            embed.add_field(name='`>leaderboard`', value='Sends you the leaderboard of the server', inline=False)
+            embed.add_field(name='`>rank`', value='Sends your stats', inline=False)
+            embed.add_field(name='`>levelsys [enable/disable]`', value='Enable or disable leveling system', inline=False)
         await ctx.send(embed=embed)
     @help.error
     async def help_error(self,ctx,error):
@@ -64,6 +74,8 @@ class HelpCog(commands.Cog):
                 embed.add_field(name="Linux", value="`>help linux`", inline=True)
                 embed.add_field(name="Misc", value="`>help misc`", inline=True)
                 embed.add_field(name="Economy (beta)", value="`>help economy`", inline=True)
+                embed.add_field(name="Music", value="`>help music`", inline=True)
+                embed.add_field(name="Level", value="`>help level`", inline=True)
                 embed.add_field(name="\u200b",value="[Invite Me!](https://discord.com/api/oauth2/authorize?client_id=725734772479098880&permissions=8&scope=bot)")
                 embed.add_field(name="\u200b",value="[Support server](https://discord.gg/fX9gtQh)",inline=True)
                 await ctx.send(embed=embed)
