@@ -40,10 +40,10 @@ async def antispam(ctx,arg):
     global antispam
     if arg == "on":
         antispam = True
-        await ctx.send("Antispam turned **on** !")
+        await ctx.send("Antispam turned **on**!")
     if arg == "off":
         antispam = False
-        await ctx.send("Antispam turned **off** !")
+        await ctx.send("Antispam turned **off**!")
 # The commands in this section should, at some point, be moved to the appropriate cog.
 @client.event
 async def on_message(message): #antispam
@@ -65,7 +65,7 @@ async def on_message(message): #antispam
 
                     spamming += 1
                     if spamming < 3:
-                        await message.channel.send(f"{message.author.mention} **stop spamming!**")
+                        await message.channel.send(f"{message.author.mention} **Stop spamming!**")
                         if spamming > 3:
                             spamming = 0
                         if spamming == 3:
