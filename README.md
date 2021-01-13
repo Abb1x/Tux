@@ -24,11 +24,11 @@ HELP with the linux commnads
 ``` 
 Help with the miscs commands
 ```
->help MISC
+>Help MISC
 ```
 Help with the economy commands
 ```
->HELP ECONOMY 
+>Help ECONOMY 
 ``` 
 Help with the music commands
 ```
