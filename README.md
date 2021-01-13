@@ -14,27 +14,27 @@
 
 #### Help tags
 
-#####Help with the commands of moderation
+Help with the commands of moderation
 ```
 >help moderation
 ```
-#####HELP with the linux commnads
+HELP with the linux commnads
 ```
 >Help linux
 ``` 
-#####Help with the miscs commands
+Help with the miscs commands
 ```
 >help MISC
 ```
-#####Help with the economy commands
+Help with the economy commands
 ```
 >HELP ECONOMY 
 ``` 
-#####Help with the music commands
+Help with the music commands
 ```
 help music  
 ```
-###Help with levels
+Help with levels
 ```
 >help level
 ```
