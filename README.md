@@ -20,11 +20,11 @@ Help with the commands of moderation
 ```
 HELP with the linux commnads
 ```
->Help linux
+>help linux
 ``` 
 Help with the miscs commands
 ```
->Help MISC
+>help misc
 ```
 Help with the economy commands
 ```
@@ -32,7 +32,7 @@ Help with the economy commands
 ``` 
 Help with the music commands
 ```
-help music  
+>help music  
 ```
 Help with levels
 ```
