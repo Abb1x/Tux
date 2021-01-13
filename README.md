@@ -12,7 +12,29 @@
 
 ### How to use it
 
-# Help tags
+#### Help tags
 
->help moderations       help linux      >help misc
->help economy           help music      >help level
+#####Help with the commands of moderation
+```
+>help moderation
+```
+#####HELP with the linux commnads
+```
+>Help linux
+``` 
+#####Help with the miscs commands
+```
+>help MISC
+```
+#####Help with the economy commands
+```
+>HELP ECONOMY 
+``` 
+#####Help with the music commands
+```
+help music  
+```
+###Help with levels
+```
+>help level
+```
