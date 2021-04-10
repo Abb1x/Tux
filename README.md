@@ -12,3 +12,5 @@
 - Invite it: https://discord.com/api/oauth2/authorize?client_id=725734772479098880&permissions=8&scope=bot 
 
 
+## It's kinda dead btw
+Thank you everyone who contributed 
