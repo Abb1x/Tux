@@ -13,4 +13,4 @@
 
 
 ## It's kinda dead btw
-Thank you everyone who contributed 
+Thank you everyone who contributed!
